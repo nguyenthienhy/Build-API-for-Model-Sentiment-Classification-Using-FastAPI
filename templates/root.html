@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Sentiment API</title>
+  <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Hind:300' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="../static/css/style.css">
+</head>
+
+<body>
+  <div>
+    <form action="/predict_corpus/" enctype="multipart/form-data" method="post"
+      style="position: absolute;
+      top: 30%;
+      left: 50%;
+      margin: -150px 0 0 -150px;
+      width:400px;
+      height:400px;">
+      <input name="files" type="file" multiple>
+      <button type="submit" class="btn btn-primary btn-block btn-large">Upload</button>
+    </form>
+  </div>
+  <div class="login">
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <h1>Predict Sentence</h1>
+    <form action="/predict/" method="post">
+      <input type="text" name="text_input" placeholder="Enter a comment" required="required" />
+      <button type="submit" class="btn btn-primary btn-block btn-large">Predict</button>
+    </form>
+    <br>
+    <br>
+    {{text_input}} : {{label}}
+  </div>
+</body>
+
+</html>
