@@ -27,7 +27,7 @@ class Test:
     else:
       test_df = pd.read_excel(self.x_test_file_path)
       test_df["cau_hoi"] = test_df["cau_hoi"].progress_apply(lambda x: ' '.join([' '.join(sent) 
-                                            for sent in self.vn_tokenizer.tokenize(x)]))
+                                            for sent in self.vn_tokenizer.tokenize(str(x))]))
       self.X_test = test_df["cau_hoi"].values
       self.X_test = prep.preprocess_corpus_test(self.X_test)
     self.X_test = convert_lines(self.X_test, self.vocab, self.bpe , constant.max_sequence_length)
