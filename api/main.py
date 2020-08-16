@@ -11,16 +11,17 @@ from app.configs.utils import *
 from app.service import load_model
 #from app.configs import connect_database
 
-# khoi tao api
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
 # load model
-bpe , vn_tokenizer , model_bert , vocab = load_model.load_model()
+bpe , vn_tokenizer , model_bert , vocab = load_model.load_phobert_model()
+vectorizer , svm_model = load_model.load_svm_model()
 
 # connect database
-# curror , db = connect_database.connect_to(host=constant.host, port=constant.port, user=constant.user, passwd=constant.passwd, db="sentiment")
+# curror , db = connect_database.connect_to(host=constant.host, port=constant.port, user=constant.user
+                                            #, passwd=constant.passwd, db="sentiment")
 
 @app.post("/predict_corpus/")
 async def create_upload_files(request: Request , files: List[UploadFile] = File(...)):
@@ -34,10 +35,15 @@ async def create_upload_files(request: Request , files: List[UploadFile] = File(
         shutil.copyfileobj(file_object, upload_folders[i])
         test_object = test.Test(x_test_file_path=upload_folders[i].name, y_test_file_path=None
                                 , has_label=False
-                                , model_bert=model_bert
+                                , model_name=None
+                                , model_object = None
                                 , vocab=vocab
                                 , vn_tokenizer=vn_tokenizer
-                                , bpe=bpe)
+                                , bpe=bpe
+                                , vectorizer = None)
+        test_object.model_name = 'phobert'
+        test_object.model_object = model_bert
+        test_object.vectorizer = vectorizer
         test_object.init_test_corpus()
         num_pos , num_neg , num_neu = test_object.predict_corpus()
         pos_lists.append(num_pos)
@@ -47,7 +53,7 @@ async def create_upload_files(request: Request , files: List[UploadFile] = File(
         upload_folders[i].close()
     
     return templates.TemplateResponse("report.html", {"request": request , "status" : "done" , 
-                                                    "pos_lists" : pos_lists[0] , "neg_lists" : neu_lists[0] 
+                                                    "pos_lists" : pos_lists[0] , "neg_lists" : neg_lists[0] 
                                                     , "neu_lists" : neu_lists[0]})
 
 '''
@@ -76,10 +82,15 @@ async def create_upload_files(request: Request , files: List[UploadFile] = File(
 async def predict_text_input(request: Request , text_input: str = Form(...)):
     test_object = test.Test(x_test_file_path=None, y_test_file_path=None
                                 , has_label=False
-                                , model_bert=model_bert
+                                , model_name=None
+                                , model_object = None
                                 , vocab=vocab
                                 , vn_tokenizer=vn_tokenizer
-                                , bpe=bpe)
+                                , bpe=bpe
+                                , vectorizer = None)
+    test_object.model_name = 'phobert'
+    test_object.model_object = model_bert
+    test_object.vectorizer = vectorizer
     label , text_prep = test_object.predict(text_input)
     del test_object
     return templates.TemplateResponse("root.html", {"request": request , "text_input": text_prep , "label" : label})

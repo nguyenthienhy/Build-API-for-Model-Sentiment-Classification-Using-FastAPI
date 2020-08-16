@@ -11,8 +11,17 @@ from app.configs import paths
 from app.configs.models import *
 from app.configs.utils import *
 from app.service.models import *
+import joblib
+import pickle
 
-def load_model():
+def load_svm_model():
+    with open(paths.svm_path , 'rb') as f:
+        svm_model = joblib.load(f)
+    with open(paths.vectorizer_path , 'rb') as f:
+        vectorizer = pickle.load(f)
+    return vectorizer , svm_model
+
+def load_phobert_model():
 
     device = torch.device("cpu")
 
