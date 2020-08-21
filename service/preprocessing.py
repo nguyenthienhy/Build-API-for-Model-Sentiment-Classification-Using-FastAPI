@@ -9,6 +9,7 @@ vn_tokenizer = VnCoreNLP(paths.vncore_jar_path,
                             annotators="wseg", max_heap_size='-Xmx500m')
 
 class Preprocessing:
+
     def __init__(self, text_input):
         self.text_input = text_input
 
