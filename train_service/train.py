@@ -28,21 +28,24 @@ parser.add_argument('--bpe-codes',
     type=str,  
     help='path to fastBPE BPE'
 )
+
 args = parser.parse_args()
 bpe = fastBPE(args)
 
+# tách từ
 vn_tokenizer = VnCoreNLP(paths.vncore_jar_path,
                          annotators="wseg", max_heap_size='-Xmx500m')
 
 seed_everything(69)
 
-# Load model
+# Thiết lập cấu hình cho mô hình bert
 config = RobertaConfig.from_pretrained(
     paths.config_path,
     output_hidden_states = True,
     num_labels = 3
 )
 
+# load model bert
 model_bert = RobertaForAIViVN.from_pretrained(paths.pretrained_path, config=config)
 model_bert.cuda()
 
@@ -71,6 +74,7 @@ optimizer_grouped_parameters = [
     {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], 'weight_decay': 0.01},
     {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
 ]
+
 num_train_optimization_steps = int(constant.epochs * X_train.shape[0] / constant.batch_size / constant.accumulation_steps)
 optimizer = AdamW(optimizer_grouped_parameters, lr = constant.lr, correct_bias=False)  # To reproduce BertAdam specific behavior set correct_bias=False
 scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=100, num_training_steps=num_train_optimization_steps)  # PyTorch scheduler
@@ -80,10 +84,13 @@ loss_t = torch.nn.CrossEntropyLoss() # Define loss function
 splits = list(StratifiedKFold(n_splits=5, shuffle=True, random_state=123).split(X_train, y_train))
 
 for fold, (train_idx, val_idx) in enumerate(splits):
+
     print("Training for fold {}".format(fold))
+
     best_score = 0
     if fold != constant.fold:
         continue
+
     train_dataset = torch.utils.data.TensorDataset(torch.tensor(X_train[train_idx],dtype=torch.long), torch.tensor(y_train[train_idx],dtype=torch.long))
     valid_dataset = torch.utils.data.TensorDataset(torch.tensor(X_train[val_idx],dtype=torch.long), torch.tensor(y_train[val_idx],dtype=torch.long))
     tq = tqdm(range(constant.epochs + 1))
@@ -92,6 +99,7 @@ for fold, (train_idx, val_idx) in enumerate(splits):
             if not param.requires_grad:
                 print("whoopsies")
             param.requires_grad = False
+
     frozen = True
     for epoch in tq:
 
@@ -103,14 +111,16 @@ for fold, (train_idx, val_idx) in enumerate(splits):
             del scheduler0
             torch.cuda.empty_cache()
 
-        val_preds = None
+        val_preds = []
         train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=constant.batch_size, shuffle=True)
         valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=constant.batch_size, shuffle=False)
         avg_loss = 0.
         avg_accuracy = 0.
 
+        # training model
         optimizer.zero_grad()
         pbar = tqdm(enumerate(train_loader),total=len(train_loader),leave=False)
+
         for i,(x_batch, y_batch) in pbar:
             model_bert.train()
             y_pred = model_bert(x_batch.cuda(), attention_mask=(x_batch>0).cuda())
@@ -129,15 +139,19 @@ for fold, (train_idx, val_idx) in enumerate(splits):
             avg_loss += loss.item() / len(train_loader)
 
         model_bert.eval()
+
+        # valilating model
         pbar = tqdm(enumerate(valid_loader),total=len(valid_loader),leave=False)
-        all_preds = []
+
         for i,(x_batch, y_batch) in pbar:
             logits = model_bert(x_batch.cuda(), attention_mask=(x_batch>0).cuda())
             predictions = torch.argmax(softmax(logits, 1), 1)
-            all_preds.extend(predictions.cpu())
-        all_preds = [it.item() for it in all_preds]
-        score = f1_score(y_train[val_idx], np.array(all_preds), average='macro')
+            val_preds.extend(predictions.cpu())
+
+        val_preds = [it.item() for it in val_preds]
+        score = f1_score(y_train[val_idx], np.array(val_preds), average='macro')
         print("F1: {}".format(score))
+
         if score >= best_score:
-            torch.save(model_bert.state_dict(),paths.model_path)
+            torch.save(model_bert.state_dict() , paths.model_path)
             best_score = score

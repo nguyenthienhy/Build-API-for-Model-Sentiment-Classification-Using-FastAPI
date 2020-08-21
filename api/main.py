@@ -9,7 +9,7 @@ from app.configs import constant
 import uvicorn
 from app.configs.utils import *
 from app.service import load_model
-#from app.configs import connect_database
+# from app.configs import connect_database
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -23,6 +23,11 @@ vectorizer , svm_model = load_model.load_svm_model()
 # curror , db = connect_database.connect_to(host=constant.host, port=constant.port, user=constant.user
                                             #, passwd=constant.passwd, db="sentiment")
 
+@app.get("/")
+async def root(request: Request):
+    return templates.TemplateResponse("root.html", {"request": request})
+
+'''
 @app.post("/predict_corpus/")
 async def create_upload_files(request: Request , files: List[UploadFile] = File(...)):
     file_objects = [file.file for file in files]
@@ -56,7 +61,6 @@ async def create_upload_files(request: Request , files: List[UploadFile] = File(
                                                     "pos_lists" : pos_lists[0] , "neg_lists" : neg_lists[0] 
                                                     , "neu_lists" : neu_lists[0]})
 
-'''
 @app.post("/predictcorpus")
 async def create_upload_files(request: Request , files: List[UploadFile] = File(...)):
     file_objects = [file.file for file in files]
@@ -80,25 +84,21 @@ async def create_upload_files(request: Request , files: List[UploadFile] = File(
 
 @app.post("/predict")
 async def predict_text_input(request: Request , text_input: str = Form(...)):
-    test_object = test.Test(x_test_file_path=None, y_test_file_path=None
-                                , has_label=False
-                                , model_name=None
+    test_object = test.Test(x_test_file_path = None, y_test_file_path = None
+                                , has_label = False
+                                , model_name = None
                                 , model_object = None
-                                , vocab=vocab
-                                , vn_tokenizer=vn_tokenizer
-                                , bpe=bpe
+                                , vocab = vocab
+                                , vn_tokenizer = vn_tokenizer
+                                , bpe = bpe
                                 , vectorizer = None)
     test_object.model_name = 'phobert'
     test_object.model_object = model_bert
     test_object.vectorizer = vectorizer
     label , text_prep = test_object.predict(text_input)
     del test_object
-    return templates.TemplateResponse("root.html", {"request": request , "text_input": text_prep , "label" : label})
+    return templates.TemplateResponse("root.html", {"request" : request , "text_input" : text_prep , "label" : label})
 
-
-@app.get("/")
-async def root(request: Request):
-    return templates.TemplateResponse("root.html", {"request": request})
 
 if __name__ == '__main__':
     uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -47,7 +47,7 @@ def load_phobert_model():
     )
 
     model_bert = RobertaForAIViVN.from_pretrained(paths.pretrained_path, config=config)
-    #model_bert.cuda()
+    # model_bert.cuda()
 
     # Load the dictionary
     vocab = Dictionary()
@@ -65,6 +65,6 @@ def load_phobert_model():
     model_bert = nn.DataParallel(model_bert)
     tsfm = model_bert.module.roberta
 
-    model_bert.load_state_dict(torch.load(paths.model_path , map_location=device))
+    model_bert.load_state_dict(torch.load(paths.phobert_path , map_location=device))
     
     return bpe , vn_tokenizer , model_bert , vocab
