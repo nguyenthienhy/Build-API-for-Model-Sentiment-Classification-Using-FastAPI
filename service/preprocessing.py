@@ -42,47 +42,33 @@ class Preprocessing:
             self.text_input = ' '.join(split_str_input)
 
     def thay_the_tu_viet_tat(self):
-        backup_str_input = self.text_input
-        change = ""
         s = self.text_input.split()
-        for i, w in enumerate(constant.tu_viet_tat['tu_viet_tat'].values):
-            if len(s) != 0:
-                if w == s[0]:
-                    change = self.text_input.replace(w, constant.tu_viet_tat['tu_da_sua_viet_tat'].values[i] + " ")
-                    self.text_input = self.text_input.replace(w, constant.tu_viet_tat[
-                        'tu_da_sua_viet_tat'].values[i] + " ")
-                elif w == s[-1]:
-                    change = self.text_input.replace(w, " " + constant.tu_viet_tat['tu_da_sua_viet_tat'].values[i])
-                    self.text_input = self.text_input.replace(w, " " + constant.tu_viet_tat[
-                        'tu_da_sua_viet_tat'].values[i])
-                if 2 <= len(s) < 3:
-                    if w == s[0] + " " + s[1]:
-                        change = self.text_input.replace(w, constant.tu_viet_tat['tu_da_sua_viet_tat'].values[i] + " ")
-                        self.text_input = self.text_input.replace(w,
-                                                                  constant.tu_viet_tat[
-                                                                      'tu_da_sua_viet_tat'].values[i] + " ")
-                elif len(s) >= 3:
-                    if w == s[0] + " " + s[1]:
-                        change = self.text_input.replace(w, constant.tu_viet_tat['tu_da_sua_viet_tat'].values[i] + " ")
-                        self.text_input = self.text_input.replace(w,
-                                                                  constant.tu_viet_tat[
-                                                                      'tu_da_sua_viet_tat'].values[i] + " ")
-                    elif w == s[-2] + " " + s[-1]:
-                        change = self.text_input.replace(w, " " + constant.tu_viet_tat['tu_da_sua_viet_tat'].values[i])
-                        self.text_input = self.text_input.replace(w,
-                                                                  " " + constant.tu_viet_tat[
-                                                                      'tu_da_sua_viet_tat'].values[i])
-                    w = " " + w + " "
-                    if self.text_input.__contains__(w):
-                        change = self.text_input.replace(w, " " + constant.tu_viet_tat[
-                            'tu_da_sua_viet_tat'].values[i] + " ")
-                        self.text_input = self.text_input.replace(w, " " + constant.tu_viet_tat[
-                            'tu_da_sua_viet_tat'].values[i] + " ")
-            else:
-                break
-        if change == "":
-            change = backup_str_input
-        self.text_input = change
+        flag0 = False
+        max_length = -1
+        for word in constant.tu_viet_tat['tu_da_sua_viet_tat'].values:
+            max_length = max(max_length , len(word))
+        if len(s) != 0:
+            for i, w in enumerate(constant.tu_viet_tat['tu_viet_tat'].values):
+                w = " ".join(w.split())
+                for j , word in enumerate(s):
+                    if word == w:
+                        s[j] = ' '.join(constant.tu_viet_tat['tu_da_sua_viet_tat'].values[i].split())
+                        flag0 = True
+                        self.text_input = ' '.join(s)
+                if flag0 is True:
+                    continue
+                for max_len in range(max_length):
+                    s_compare = ""
+                    for k in range(len(s) - max_len):
+                        if k == 0:
+                            s_compare = s_compare + s[k]
+                        else:
+                            s_compare = s_compare + " " + s[k]
+                    if s_compare == w:
+                        for k in range(max_len):
+                            s[k] = constant.tu_viet_tat['tu_da_sua_viet_tat'].values[i].split()[k]
+                            self.text_input = " ".join(s)
+                
     
     def chuan_hoa_cau_phu_dinh(self):
         texts = self.text_input.split()
@@ -206,7 +192,7 @@ class Preprocessing:
                      self.text_input.split()]  # loại bỏ các ký tự đặc biệt
         self.text_input = ' '.join(split_str)
         self.thay_the_tu_viet_tat()  # thay thế các từ sai
-        self.sua_loi_go_dau()  # sửa lỗi gõ dấu bàn phím
+        #self.sua_loi_go_dau()  # sửa lỗi gõ dấu bàn phím
         self.text_input = re.sub('\n', '', self.text_input)  # loại bỏ ký tự "\n"
         self.chuan_hoa_cac_ky_tu_dac_biet()  # chuẩn hoá lại một số ký tự
         split_str = self.text_input.split()
@@ -246,4 +232,3 @@ def preprocess_corpus_test(corpus_data):
         else:
             corpus_data_preprocessed.append(pro_sentence)
     return np.asarray(corpus_data_preprocessed)
-
