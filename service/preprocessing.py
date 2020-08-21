@@ -92,17 +92,17 @@ class Preprocessing:
             if cp_text in constant.tu_phu_dinh:
                 numb_word = 2 if len_text - i - 1 >= 4 else len_text - i - 1
                 for j in range(numb_word):
-                    if texts[i + j + 1] in constant.tu_tich_cuc:
+                    if ' '.join([' '.join(sent) for sent in vn_tokenizer.tokenize(str(texts[i + j + 1]))]) in constant.tu_tich_cuc:
                         texts[i] = 'tiêu_cực'
                         texts[i + j + 1] = ''
-                    if texts[i + j + 1] in constant.tu_tieu_cuc:
+                    if ' '.join([' '.join(sent) for sent in vn_tokenizer.tokenize(str(texts[i + j + 1]))]) in constant.tu_tieu_cuc:
                         texts[i] = 'tích_cực'
                         texts[i + j + 1] = ''
             else:
-                if cp_text in constant.tu_tich_cuc:
+                if ' '.join([' '.join(sent) for sent in vn_tokenizer.tokenize(str(cp_text))]) in constant.tu_tich_cuc:
                     if "question" not in self.text_input:
                         texts.append('tích_cực')
-                elif cp_text in constant.tu_tieu_cuc:
+                elif ' '.join([' '.join(sent) for sent in vn_tokenizer.tokenize(str(cp_text))]) in constant.tu_tieu_cuc:
                     if "question" not in self.text_input:
                         texts.append('tiêu_cực')
 

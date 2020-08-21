@@ -92,9 +92,9 @@ async def predict_text_input(request: Request , text_input: str = Form(...)):
                                 , vn_tokenizer = vn_tokenizer
                                 , bpe = bpe
                                 , vectorizer = None)
-    test_object.model_name = 'svm'
-    test_object.model_object = svm_model
-    test_object.vectorizer = vectorizer
+    test_object.model_name = 'phobert'
+    test_object.model_object = model_bert
+    #test_object.vectorizer = vectorizer
     label , text_prep = test_object.predict(text_input)
     del test_object
     return templates.TemplateResponse("root.html", {"request" : request , "text_input" : text_prep , "label" : label})
