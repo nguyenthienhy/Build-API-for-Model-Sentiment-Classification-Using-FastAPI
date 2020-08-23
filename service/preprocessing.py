@@ -43,31 +43,22 @@ class Preprocessing:
 
     def thay_the_tu_viet_tat(self):
         s = self.text_input.split()
-        flag0 = False
         max_length = -1
         for word in constant.tu_viet_tat['tu_da_sua_viet_tat'].values:
             max_length = max(max_length , len(word))
         if len(s) != 0:
             for i, w in enumerate(constant.tu_viet_tat['tu_viet_tat'].values):
                 w = " ".join(w.split())
-                for j , word in enumerate(s):
-                    if word == w:
-                        s[j] = ' '.join(constant.tu_viet_tat['tu_da_sua_viet_tat'].values[i].split())
-                        flag0 = True
-                        self.text_input = ' '.join(s)
-                if flag0 is True:
-                    continue
-                for max_len in range(max_length):
-                    s_compare = ""
-                    for k in range(len(s) - max_len):
-                        if k == 0:
-                            s_compare = s_compare + s[k]
-                        else:
-                            s_compare = s_compare + " " + s[k]
-                    if s_compare == w:
-                        for k in range(max_len):
-                            s[k] = constant.tu_viet_tat['tu_da_sua_viet_tat'].values[i].split()[k]
-                            self.text_input = " ".join(s)
+                for k in range(0 , len(s) - len(w.split())):
+                    s_compare = s[k]
+                    if len(w.split()) == 1:
+                        if s_compare == w:
+                            self.text_input = self.text_input.replace(w , constant.tu_viet_tat['tu_da_sua_viet_tat'].values[i])
+                    else:
+                        for j in range(k + 1 , k + len(w.split())):
+                            s_compare = s_compare + " " + s[j]
+                        if s_compare == w:
+                            self.text_input = self.text_input.replace(w , constant.tu_viet_tat['tu_da_sua_viet_tat'].values[i])
                 
     
     def chuan_hoa_cau_phu_dinh(self):
@@ -192,7 +183,7 @@ class Preprocessing:
                      self.text_input.split()]  # loại bỏ các ký tự đặc biệt
         self.text_input = ' '.join(split_str)
         self.thay_the_tu_viet_tat()  # thay thế các từ sai
-        #self.sua_loi_go_dau()  # sửa lỗi gõ dấu bàn phím
+        self.sua_loi_go_dau()  # sửa lỗi gõ dấu bàn phím
         self.text_input = re.sub('\n', '', self.text_input)  # loại bỏ ký tự "\n"
         self.chuan_hoa_cac_ky_tu_dac_biet()  # chuẩn hoá lại một số ký tự
         split_str = self.text_input.split()
@@ -232,3 +223,6 @@ def preprocess_corpus_test(corpus_data):
         else:
             corpus_data_preprocessed.append(pro_sentence)
     return np.asarray(corpus_data_preprocessed)
+    
+#app = Preprocessing("chât lương tuyet voi cc nguyen van cong linh nguyen thien hy chât lương vcl vl  ok lam")
+#print(app.preprocessing_sentence())

@@ -121,7 +121,9 @@ class Test:
       test_loader = torch.utils.data.DataLoader(text_dataset, batch_size = 1)
       for (x_batch,) in test_loader:
         logits = self.model_object(x_batch, attention_mask=(x_batch > 0))
-        predictions = torch.argmax(softmax(logits, 1), 1)
+        soft = softmax(logits, 1)
+        predictions = torch.argmax(soft, 1)
+        print("Confidence : " + str((soft[0])[predictions].cpu().item()))
         self.model_object.eval()
         if predictions.cpu().item() == 0:
           return "Tích cực" , text_preped
