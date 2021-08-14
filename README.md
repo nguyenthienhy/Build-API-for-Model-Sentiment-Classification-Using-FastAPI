@@ -1,2 +1,2 @@
 # Sentiment-Analysis
-Xây dựng mô hình nhận diện cảm xúc cho dữ liệu text
+Build a API for Sentiment Classification based on text using FastAPI
